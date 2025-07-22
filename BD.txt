@@ -1,0 +1,178 @@
+-- Crear esquema si deseas separar lógicamente
+-- CREATE SCHEMA gestion_client;
+
+-- Tabla: usuarios
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: clientes
+CREATE TABLE clientes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    telefono VARCHAR(15),
+    correo VARCHAR(100),
+    ruc VARCHAR(20),
+    dni VARCHAR(15),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: servicios
+CREATE TABLE servicios (
+    id SERIAL PRIMARY KEY,
+    nombre_servicio VARCHAR(255) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: planes
+CREATE TABLE planes (
+    id SERIAL PRIMARY KEY,
+    nombre_plan VARCHAR(50) NOT NULL,
+    descripcion TEXT,
+    duracion INT DEFAULT 30,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    servicio_id INT NOT NULL,
+    precio DECIMAL(10,2) DEFAULT 0.00,
+    caracteristicas TEXT,
+    FOREIGN KEY (servicio_id) REFERENCES servicios(id) ON DELETE CASCADE
+);
+
+-- Tabla: cotizaciones
+CREATE TABLE cotizaciones (
+    id SERIAL PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    servicio_id INT NOT NULL,
+    plan VARCHAR(50),
+    precio_sin_igv DECIMAL(10,2) NOT NULL,
+    precio_con_igv DECIMAL(10,2) NOT NULL,
+    detalles TEXT,
+    fecha_creacion DATE DEFAULT CURRENT_DATE,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    plan_id INT,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    FOREIGN KEY (servicio_id) REFERENCES servicios(id) ON DELETE CASCADE,
+    FOREIGN KEY (plan_id) REFERENCES planes(id) ON DELETE SET NULL
+);
+
+ALTER TABLE cotizaciones
+ALTER COLUMN fecha_creacion TYPE timestamp
+USING fecha_creacion::timestamp;
+
+-- Tabla: ventas
+CREATE TABLE ventas (
+    id SERIAL PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    telefono VARCHAR(15),
+    correo VARCHAR(100),
+    ruc VARCHAR(20),
+    dni VARCHAR(15),
+    servicio_id INT NOT NULL,
+    fecha_servicio DATE NOT NULL,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    monto_total DECIMAL(10,2) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notas TEXT,
+    tipo_documento VARCHAR(10) DEFAULT 'boleta',
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    FOREIGN KEY (servicio_id) REFERENCES servicios(id) ON DELETE CASCADE
+);
+
+-- Tabla: carpetas
+CREATE TABLE carpetas (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: archivos
+CREATE TABLE archivos (
+    id SERIAL PRIMARY KEY,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    ruta_archivo VARCHAR(255) NOT NULL,
+    carpeta_id INT,
+    mes VARCHAR(15) NOT NULL,
+    anio INT NOT NULL,
+    tipo_documento VARCHAR(50) NOT NULL CHECK (tipo_documento IN ('Factura de compra','Factura emitida','Recibo por honorarios','Pago contabilidad')),
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (carpeta_id) REFERENCES carpetas(id) ON DELETE SET NULL
+);
+
+-- Tabla: hosting_facturacion
+CREATE TABLE hosting_facturacion (
+    id SERIAL PRIMARY KEY,
+    cliente VARCHAR(100) NOT NULL DEFAULT '',
+    proveedor VARCHAR(100) NOT NULL,
+    plan VARCHAR(100) NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_renovacion DATE NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    periodo VARCHAR(15) CHECK (periodo IN ('mensual','trimestral','semestral','anual')) NOT NULL,
+    estado VARCHAR(15) DEFAULT 'activo' CHECK (estado IN ('activo','pendiente','vencido')),
+    notificacion_enviada BOOLEAN DEFAULT FALSE,
+    notas TEXT
+);
+
+-- Tabla: hosting_renovaciones
+CREATE TABLE hosting_renovaciones (
+    id SERIAL PRIMARY KEY,
+    hosting_id INT NOT NULL,
+    fecha_anterior DATE NOT NULL,
+    fecha_nueva DATE NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    fecha_renovacion DATE NOT NULL,
+    FOREIGN KEY (hosting_id) REFERENCES hosting_facturacion(id) ON DELETE CASCADE
+);
+
+ALTER TABLE servicios ADD COLUMN precio FLOAT DEFAULT 0.0;
+-- Elimina ruta_archivo si existe y agrega contenido BYTEA
+ALTER TABLE archivos DROP COLUMN IF EXISTS ruta_archivo;
+ALTER TABLE archivos ADD COLUMN contenido BYTEA;
+
+ALTER TABLE archivo DROP CONSTRAINT archivo_tipo_documento_check;
+
+ALTER TABLE archivo ADD CONSTRAINT archivo_tipo_documento_check CHECK (
+  tipo_documento IN (
+    'Factura de Compra',
+    'Factura Emitida',
+    'Recibo por Honorarios',
+    'Pago Contabilidad'
+  )
+);
+
+INSERT INTO servicios (nombre_servicio) VALUES
+('Community Manager'),
+('Hosting y Dominio'),
+('Mantenimiento Web'),
+('Página Web'),
+('Publicidad en medios Digitales');
+
+INSERT INTO planes (nombre_plan, descripcion, duracion, servicio_id, precio, caracteristicas)
+VALUES 
+('Plan Básico', 'Ideal para emprendedores que recién inician.', 30, 1, 150.00, '1 red social, 3 publicaciones semanales'),
+('Plan Corporativo', 'Pensado para empresas que necesitan presencia constante.', 60, 1, 300.00, '3 redes sociales, 5 publicaciones semanales, informes mensuales'),
+('Plan Premium', 'El paquete más completo para campañas agresivas.', 90, 1, 500.00, '5 redes sociales, publicaciones diarias, diseño gráfico, informes y asesoría');
+
+
+select * from planes;
+select * from cotizaciones;
+
+ALTER DATABASE gestion_client SET TIME ZONE DEFAULT;
+
+
+UPDATE cotizaciones
+SET fecha_creacion = '2025-07-18'
+WHERE id = 3;
+
+ALTER TABLE cotizaciones
+ALTER COLUMN fecha_creacion TYPE timestamp
+USING fecha_creacion::timestamp;
+
+ALTER TABLE cotizaciones
+ALTER COLUMN fecha_creacion TYPE TIMESTAMP WITH TIME ZONE
+USING fecha_creacion AT TIME ZONE 'UTC-5';
