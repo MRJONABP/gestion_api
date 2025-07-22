@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sqlalchemy.sql import func
-import os
 from db import db
 from models import Usuario, Cliente, Servicio, Plan, Cotizacion, Venta, Carpeta, Archivo, HostingFacturacion, HostingRenovacion
 from datetime import datetime
@@ -12,8 +11,7 @@ from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from models import Cotizacion, Cliente, Servicio  # asegúrate de importar tus modelos
-from dotenv import load_dotenv
-load_dotenv()
+
 
 app = Flask(__name__)
 CORS(app)
