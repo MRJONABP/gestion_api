@@ -15,8 +15,7 @@ from models import Cotizacion, Cliente, Servicio  # asegúrate de importar tus m
 
 app = Flask(__name__)
 CORS(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://bpstudio:bUqf0JXdcVNIHLcd3D6aguP93veUOAnI@dpg-d1vgur2dbo4c73fggvlg-a.oregon-postgres.render.com/gestion_client'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://bpstudio:bUqf0JXdcVNlHLcd3D6aguP93veUOAnI@dpg-d1vgur2dbo4c73fggvlg-a.oregon-postgres.render.com/gestion_client?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
