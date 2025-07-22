@@ -1,6 +1,8 @@
 Flask
-flask_sqlalchemy
-psycopg2-binary
-flask-cors
-flask-bcrypt
 gunicorn
+sqlalchemy
+flask_sqlalchemy
+flask_cors
+flask_bcrypt
+psycopg2-binary
+pytz
