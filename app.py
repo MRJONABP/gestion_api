@@ -11,7 +11,8 @@ from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from models import Cotizacion, Cliente, Servicio  # asegúrate de importar tus modelos
-
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
